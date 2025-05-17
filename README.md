@@ -19,7 +19,26 @@ A minimal macOS menu bar app built with Python and [rumps](https://github.com/ja
   - Dark mode toggle
   - Memory usage by actual GB instead of percentage
 
+---
+
+## 📦 Installation
+
+> Note: This app is macOS-only and uses Python3.
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/aariir/infoCenter.git
+cd infoCenter
+```
+
+### 2. Build using py2app
+```bash
+python3 setup.py py2app
+```
+The output will be in the /dist directory.
 
 ---
 
-Feel free to use and edit it to your liking.
+## 🧾 License
+This project is licensed under the MIT License.
+Feel free to fork, modify, and share!
