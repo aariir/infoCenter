@@ -37,7 +37,10 @@ python3 setup.py py2app
 ```
 The output will be in the /dist directory.
 
----
+## Screenshots
+
+<img width="756" alt="iCenter" src="https://github.com/user-attachments/assets/1b8ee6a8-68f6-4aad-8ca1-f8e9e0bd2d8f" />
+
 
 ## 🧾 License
 This project is licensed under the MIT License.
