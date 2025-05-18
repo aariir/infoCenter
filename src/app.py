@@ -6,7 +6,7 @@ class SystemMonitorApp(rumps.App):
     """System Monitor for macOS Menu Bar"""
 
     def __init__(self):
-        super().__init__("🖥️", quit_button=None)  # Title menu bar
+        super().__init__("💻", quit_button=None)  # Title menu bar
 
         self.app_data_dir = os.path.expanduser("~/Library/Application Support/SystemMonitor")
         os.makedirs(self.app_data_dir, exist_ok=True)
@@ -23,6 +23,26 @@ class SystemMonitorApp(rumps.App):
         threading.Thread(target=self.update_public_ip).start()
         rumps.Timer(self.check_clipboard, 1).start()  # Tarkista leikepöytä
         self.check_clipboard()
+
+
+    def start_monitoring(self): # New method to start monitoring
+        self.stats_timer = rumps.Timer(self.update_stats, 3)
+        self.stats_timer.start()
+        
+        # Clipboard check evey second (if enabled)
+        if self.settings["show_clipboard"]:
+            self.clipboard_timer = rumps.Timer(self.check_clipboard, 1)
+            self.clipboard_timer.start()
+        
+        # Public IP check every 10 min nstead of every minute
+        if self.settings["show_public_ip"]:
+            self.ip_timer = rumps.Timer(self.update_public_ip, 600)  # 10 minutes
+            self.ip_timer.start()
+
+    def stop_monitoring(self): # New method to stop monitoring
+        # dont need this
+        self.stats_timer.stop()
+        pass
 
     def load_settings(self):
         defaults = {
