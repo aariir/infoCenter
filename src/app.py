@@ -3,16 +3,14 @@ from collections import deque
 
 class SystemMonitorApp(rumps.App):
 
-    def app_support_path(self):
-        return os.path.expanduser("~/Library/Application Support/SystemMonitor")
-
-    def get_settings_file_path(self):
-        return os.path.join(self.app_support_path(), "settings.json")
+    """System Monitor for macOS Menu Bar"""
 
     def __init__(self):
         super().__init__("🖥️", quit_button=None)  # Title menu bar
-        os.makedirs(self.app_support_path(), exist_ok=True)
-        self.settings_file = self.get_settings_file_path()
+
+        self.app_data_dir = os.path.expanduser("~/Library/Application Support/SystemMonitor")
+        os.makedirs(self.app_support_dir, exist_ok=True)
+        self.settings_file = os.path.join(self.app_data_dir, "settings.json")
         self.settings = self.load_settings()  
         self.clipboard_history = deque(maxlen=6)  
         self.last_clipboard = None
