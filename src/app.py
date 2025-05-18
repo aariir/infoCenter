@@ -9,7 +9,7 @@ class SystemMonitorApp(rumps.App):
         super().__init__("🖥️", quit_button=None)  # Title menu bar
 
         self.app_data_dir = os.path.expanduser("~/Library/Application Support/SystemMonitor")
-        os.makedirs(self.app_support_dir, exist_ok=True)
+        os.makedirs(self.app_data_dir, exist_ok=True)
         self.settings_file = os.path.join(self.app_data_dir, "settings.json")
         self.settings = self.load_settings()  
         self.clipboard_history = deque(maxlen=6)  
