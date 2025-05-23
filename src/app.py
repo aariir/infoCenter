@@ -105,21 +105,21 @@ class SystemMonitorApp(rumps.App):
         }
 
         if self.settings["show_cpu"]:
-            self.menu["CPU"] = rumps.MenuItem(bold_labels["CPU"] + ": -", callback=self.info_row_click)
+            self.menu["CPU"] = rumps.MenuItem(bold_labels["CPU"] + ": -")
         if self.settings["show_memory"]:
-            self.menu["Memory"] = rumps.MenuItem(bold_labels["Memory"] + ": -", callback=self.info_row_click)
+            self.menu["Memory"] = rumps.MenuItem(bold_labels["Memory"] + ": -")
         if self.settings["show_battery"]:
-            self.menu["Battery"] = rumps.MenuItem(bold_labels["Battery"] + ": -", callback=self.info_row_click)
+            self.menu["Battery"] = rumps.MenuItem(bold_labels["Battery"] + ": -")
         if self.settings["show_network_speed"]:
-            self.menu["Network Speed"] = rumps.MenuItem(bold_labels["Network Speed"] + ": -", callback=self.info_row_click)
+            self.menu["Network Speed"] = rumps.MenuItem(bold_labels["Network Speed"] + ": -")
         if self.settings["show_network"]:
-            self.menu["Local IP"] = rumps.MenuItem(bold_labels["Local IP"] + ": -", callback=self.info_row_click)
+            self.menu["Local IP"] = rumps.MenuItem(bold_labels["Local IP"] + ": -")
         if self.settings["show_public_ip"]:
-            self.menu["Public IP"] = rumps.MenuItem(bold_labels["Public IP"] + f": {self.public_ip}", callback=self.info_row_click)
+            self.menu["Public IP"] = rumps.MenuItem(bold_labels["Public IP"] + f": {self.public_ip}")
         if self.settings["show_storage"]:
-            self.menu["Storage"] = rumps.MenuItem(bold_labels["Storage"] + ": -", callback=self.info_row_click)
+            self.menu["Storage"] = rumps.MenuItem(bold_labels["Storage"] + ": -")
         if self.settings["show_uptime"]:
-            self.menu["Uptime"] = rumps.MenuItem(bold_labels["Uptime"] + ": -", callback=self.info_row_click)
+            self.menu["Uptime"] = rumps.MenuItem(bold_labels["Uptime"] + ": -")
 
         if self.settings["show_clipboard"]:
             self.menu["Clipboard History"] = "Clipboard"
