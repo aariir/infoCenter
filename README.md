@@ -18,6 +18,8 @@ A minimal macOS menu bar app built with Python and [rumps](https://github.com/ja
   - Make clipboard history copy the selected text
   - Dark mode toggle
   - Memory usage by actual GB instead of percentage
+  - Make the code easier to read
+  - Bug fixes
 
 ---
 
