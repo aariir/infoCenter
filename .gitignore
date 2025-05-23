@@ -1,4 +1,6 @@
 build/
+.DS_Store
+.eggs/
 dist/
 *.egg-info/
 *.pyc
