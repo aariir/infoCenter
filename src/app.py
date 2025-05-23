@@ -317,12 +317,26 @@ class SystemMonitorApp(rumps.App):
     @rumps.clicked("Clipboard History", "Clip 5")
     @rumps.clicked("Clipboard History", "Clip 6")
     def copy_from_history(self, sender):
-
         try:
-            idx = int(sender.title.split()[1]) - 1
+            # Get the clip number before the colon (e.g., from "Clip 3: content" get "3")
+            idx = int(sender.title.split(':')[0].split()[1]) - 1
             if idx < len(self.clipboard_history):
-                c = self.clipboard_history[idx].replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
-                subprocess.run(f'osascript -e \'set the clipboard to "{c}"\'', shell=True)
+                clip_content = self.clipboard_history[idx]
+                # Show preview of content (truncated if too long)
+                preview = clip_content[:100] + "..." if len(clip_content) > 100 else clip_content
+                # Bring app to front before showing dialog
+                subprocess.run("osascript -e 'tell application \"System Events\" to set frontmost of process \"Python\" to true'", shell=True)
+                # Show confirmation dialog
+                response = rumps.alert(
+                    title="Copy from Clipboard History",
+                    message=f"Do you want to copy this content to clipboard?\n\nContent preview:\n{preview}",
+                    ok="Copy",
+                    cancel="Cancel"
+                )
+                # If user clicked "Copy", proceed with copying
+                if response:
+                    c = clip_content.replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
+                    subprocess.run(f'osascript -e \'set the clipboard to "{c}"\'', shell=True)
         except Exception as e:
             print(f"Error copying from clipboard history: {e}")
 
