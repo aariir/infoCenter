@@ -32,7 +32,13 @@ git clone https://github.com/aariir/infoCenter.git
 cd infoCenter
 ```
 
-### 2. Build using py2app
+### 2. Install dependencies
+
+```
+pip install -r requirements.txt
+```
+
+### 3. Build using py2app
 ```bash
 python3 setup.py py2app
 ```
