@@ -122,9 +122,9 @@ class SystemMonitorApp(rumps.App):
             self.menu["Uptime"] = rumps.MenuItem(bold_labels["Uptime"] + ": -", callback=lambda _: None)
 
         if self.settings["show_clipboard"]:
-            self.menu["Clipboard History"] = rumps.MenuItem("Clipboard")
+            self.menu["Clipboard History"] = rumps.MenuItem("Clipboard history")
             for i in range(6):
-                self.menu["Clipboard History"][f"Clip {i+1}"] = rumps.MenuItem("(empty)", callback=self.copy_from_history)
+                self.menu["Clipboard History"][f"{i+1}"] = rumps.MenuItem("(empty)", callback=self.copy_from_history)
         self.menu.add(None)  # Erotin
         # Asetukset
         self.menu["Settings"] = "Settings"
@@ -138,7 +138,7 @@ class SystemMonitorApp(rumps.App):
             item.state = self.settings[key]
             self.menu["Settings"][label] = item
 
-        quit_item = rumps.MenuItem("Quit", callback=self.quit)
+        quit_item = rumps.MenuItem("⏻ Quit", callback=self.quit)
         self.menu.add(quit_item)
     def toggle_setting(self, sender):
   
@@ -279,13 +279,13 @@ class SystemMonitorApp(rumps.App):
             return
         try:
             for i in range(6):
-                clip = self.menu["Clipboard History"][f"Clip {i+1}"]
+                clip = self.menu["Clipboard History"][f"{i+1}"]
                 if i < len(self.clipboard_history):
                     c = self.clipboard_history[i]
                     d = c[:47] + "..." if len(c) > 50 else c
-                    clip.title = f"Clip {i+1}: {d}"
+                    clip.title = f"{i+1}: {d}"
                 else:
-                    clip.title = f"Clip {i+1}: (empty)"
+                    clip.title = f"{i+1}: (empty)"
                 # Ensure callback is set
                 clip.set_callback(self.copy_from_history)
         except Exception as e:
@@ -313,12 +313,12 @@ class SystemMonitorApp(rumps.App):
 
         return "🪫" if p <= 10 else "🔋"
 
-    @rumps.clicked("Clipboard History", "Clip 1")
-    @rumps.clicked("Clipboard History", "Clip 2")
-    @rumps.clicked("Clipboard History", "Clip 3")
-    @rumps.clicked("Clipboard History", "Clip 4")
-    @rumps.clicked("Clipboard History", "Clip 5")
-    @rumps.clicked("Clipboard History", "Clip 6")
+    @rumps.clicked("Clipboard History", "1")
+    @rumps.clicked("Clipboard History", "2")
+    @rumps.clicked("Clipboard History", "3")
+    @rumps.clicked("Clipboard History", "4")
+    @rumps.clicked("Clipboard History", "5")
+    @rumps.clicked("Clipboard History", "6")
     def copy_from_history(self, sender):
         try:
             # Get the clip number before the colon (e.g., from "Clip 3: content" get "3")
