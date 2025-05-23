@@ -1,69 +1,94 @@
 import rumps, psutil, subprocess, socket, requests, threading, shutil, json, os
 from collections import deque
 
+# Constants
+SETTINGS_DEFAULTS = {
+    "show_cpu": True,
+    "show_memory": True, 
+    "show_battery": True,
+    "show_network": True,
+    "show_clipboard": True,
+    "show_uptime": True,
+    "show_storage": True,
+    "show_public_ip": True,
+    "show_network_speed": True,
+    "high_cpu_threshold": 86,
+    "high_memory_threshold": 86
+}
+
+BOLD_LABELS = {
+    "CPU": "𝗖𝗣𝗨",
+    "Memory": "𝗠𝗘𝗠𝗢𝗥𝗬",
+    "Battery": "𝗕𝗔𝗧𝗧𝗘𝗥𝗬",
+    "Network Speed": "𝗡𝗘𝗧𝗪𝗢𝗥𝗞 𝗦𝗣𝗘𝗘𝗗",
+    "Local IP": "𝗟𝗢𝗖𝗔𝗟 𝗜𝗣",
+    "Public IP": "𝗣𝗨𝗕𝗟𝗜𝗖 𝗜𝗣",
+    "Storage": "𝗦𝗧𝗢𝗥𝗔𝗚𝗘",
+    "Uptime": "𝗨𝗣𝗧𝗜𝗠𝗘"
+}
+
 class SystemMonitorApp(rumps.App):
 
     """System Monitor for macOS Menu Bar"""
 
     def __init__(self):
+        """Initialize the system monitor application"""
         super().__init__("💻", quit_button=None)  # Title menu bar
 
+        # Initialize application directories and settings
         self.app_data_dir = os.path.expanduser("~/Library/Application Support/SystemMonitor")
         os.makedirs(self.app_data_dir, exist_ok=True)
         self.settings_file = os.path.join(self.app_data_dir, "settings.json")
         self.settings = self.load_settings()  
+
+        # Initialize state variables
         self.clipboard_history = deque(maxlen=6)  
         self.last_clipboard = None
         self.last_net_io = psutil.net_io_counters()
         self.down_speed = self.up_speed = 0
         self.public_ip = "Checking..."
+        
+        # Setup UI and start monitoring
         self.setup_menu()
-        rumps.Timer(self.update_stats, 3).start()
-        rumps.Timer(self.update_public_ip, 60).start()
-        threading.Thread(target=self.update_public_ip).start()
-        rumps.Timer(self.check_clipboard, 1).start()  # Tarkista leikepöytä
-        self.check_clipboard()
+        self.start_monitoring()
 
 
-    def start_monitoring(self): # New method to start monitoring
+    def start_monitoring(self) -> None:
+        """Initialize and start all monitoring timers"""
+        # Stats update every 3 seconds
         self.stats_timer = rumps.Timer(self.update_stats, 3)
         self.stats_timer.start()
         
-        # Clipboard check evey second (if enabled)
+        # Clipboard check every second (if enabled)
         if self.settings["show_clipboard"]:
             self.clipboard_timer = rumps.Timer(self.check_clipboard, 1)
             self.clipboard_timer.start()
+            self.check_clipboard()  # Initial check
         
-        # Public IP check every 10 min nstead of every minute
+        # Public IP check every 10 minutes
         if self.settings["show_public_ip"]:
-            self.ip_timer = rumps.Timer(self.update_public_ip, 600)  # 10 minutes
+            self.ip_timer = rumps.Timer(self.update_public_ip, 600)
             self.ip_timer.start()
+            # Initial IP check
+            threading.Thread(target=self.update_public_ip).start()
 
-    def stop_monitoring(self): # New method to stop monitoring
-        # dont need this
-        self.stats_timer.stop()
-        pass
-
-    def load_settings(self):
-        defaults = {
-            "show_cpu": True, "show_memory": True, "show_battery": True, "show_network": True,
-            "show_clipboard": True, "show_uptime": True, "show_storage": True, "show_public_ip": True,
-            "show_network_speed": True, "high_cpu_threshold": 86, "high_memory_threshold": 86
-     }
+    def load_settings(self) -> dict:
+        """Load settings from file or return defaults if file doesn't exist"""
         if os.path.exists(self.settings_file):
             try:
                 with open(self.settings_file) as f:
                     return json.load(f)
             except Exception as e:
                 print(f"Could not load settings, using defaults. Reason: {e}")
-        return defaults
+        return SETTINGS_DEFAULTS.copy()
 
-    def save_settings(self):
+    def save_settings(self) -> None:
+        """Save current settings to the settings file"""
         try:
             with open(self.settings_file, 'w') as f:
                 json.dump(self.settings, f)
-        except Exception as e:
-            print(f"Error saving settings: {e}")
+        except (IOError, OSError) as e:
+            print(f"Error saving settings to {self.settings_file}: {e}")
 
     def setup_menu(self):
         self.menu.clear()
@@ -115,10 +140,6 @@ class SystemMonitorApp(rumps.App):
 
         quit_item = rumps.MenuItem("Quit", callback=self.quit)
         self.menu.add(quit_item)
-    def info_row_click(self, sender):
- 
-        pass
-
     def toggle_setting(self, sender):
   
         setting_map = {
@@ -192,34 +213,43 @@ class SystemMonitorApp(rumps.App):
         self.up_speed = (new.bytes_sent - self.last_net_io.bytes_sent) / 3
         self.last_net_io = new
 
-    def format_network_speed(self, bps):
-        # Nopeuden muotoilu
+    def format_network_speed(self, bps: float) -> tuple[str, float]:
+        """Format network speed from bytes per second to appropriate unit
+        
+        Args:
+            bps: Bytes per second
+            
+        Returns:
+            Tuple of (unit string, converted value)
+        """
         if bps < 1024:
             return "B/s", bps
         if bps < 1024*1024:
             return "KB/s", bps/1024
         return "MB/s", bps/(1024*1024)
 
-    def get_storage_info(self):
-
+    def get_storage_info(self) -> str:
+        """Get formatted string with storage usage information"""
         try:
-            t, u, f = shutil.disk_usage("/")
-            total_gb, free_gb = t // 2**30, f // 2**30
-            percent = (u / t) * 100
+            total, used, free = shutil.disk_usage("/")
+            total_gb, free_gb = total // 2**30, free // 2**30
+            percent = (used / total) * 100
             bar_length = 5
             filled = int(percent / (100 / bar_length))
             bar = "█" * filled + "░" * (bar_length - filled)
             return f"Storage: {self.get_color_indicator(percent,86)}{bar} {free_gb}GB free of {total_gb}GB"
-        except:
+        except (OSError, PermissionError) as e:
+            print(f"Error getting storage info: {e}")
             return "Storage: Error"
 
-    def update_public_ip(self, _=None):
-
+    def update_public_ip(self, _=None) -> None:
+        """Update the public IP address by querying an external service"""
         if not self.settings["show_public_ip"]:
             return
         try:
             self.public_ip = requests.get('https://api.ipify.org', timeout=5).text
-        except:
+        except (requests.RequestException, requests.Timeout) as e:
+            print(f"Failed to fetch public IP: {e}")
             self.public_ip = "Not available"
 
     def get_uptime(self):
@@ -258,12 +288,19 @@ class SystemMonitorApp(rumps.App):
         except Exception as e:
             print(f"Error updating clipboard menu: {e}")
 
-    def format_time(self, s):
-
-        if s == -1:
+    def format_time(self, seconds: int) -> str:
+        """Format seconds into a human readable time string
+        
+        Args:
+            seconds: Number of seconds to format
+            
+        Returns:
+            Formatted time string in the format "Xh Ym" or "Ym"
+        """
+        if seconds == -1:
             return "Unknown"
-        h, m = divmod(s, 3600)[0], divmod(s, 3600)[1]//60
-        return f"{h}h {m}m" if h else f"{m}m"
+        hours, minutes = divmod(seconds, 3600)[0], divmod(seconds, 3600)[1]//60
+        return f"{hours}h {minutes}m" if hours else f"{minutes}m"
 
     def get_color_indicator(self, v, t):
 
@@ -272,11 +309,6 @@ class SystemMonitorApp(rumps.App):
     def get_battery_indicator(self, p):
 
         return "🪫" if p <= 10 else "🔋"
-
-    @rumps.clicked("Clipboard History")
-    def clipboard_click(self, sender):
-
-        pass
 
     @rumps.clicked("Clipboard History", "Clip 1")
     @rumps.clicked("Clipboard History", "Clip 2")
