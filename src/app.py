@@ -105,26 +105,26 @@ class SystemMonitorApp(rumps.App):
         }
 
         if self.settings["show_cpu"]:
-            self.menu["CPU"] = rumps.MenuItem(bold_labels["CPU"] + ": -")
+            self.menu["CPU"] = rumps.MenuItem(bold_labels["CPU"] + ": -", callback=lambda _: None)
         if self.settings["show_memory"]:
-            self.menu["Memory"] = rumps.MenuItem(bold_labels["Memory"] + ": -")
+            self.menu["Memory"] = rumps.MenuItem(bold_labels["Memory"] + ": -", callback=lambda _: None)
         if self.settings["show_battery"]:
-            self.menu["Battery"] = rumps.MenuItem(bold_labels["Battery"] + ": -")
+            self.menu["Battery"] = rumps.MenuItem(bold_labels["Battery"] + ": -", callback=lambda _: None)
         if self.settings["show_network_speed"]:
-            self.menu["Network Speed"] = rumps.MenuItem(bold_labels["Network Speed"] + ": -")
+            self.menu["Network Speed"] = rumps.MenuItem(bold_labels["Network Speed"] + ": -", callback=lambda _: None)
         if self.settings["show_network"]:
-            self.menu["Local IP"] = rumps.MenuItem(bold_labels["Local IP"] + ": -")
+            self.menu["Local IP"] = rumps.MenuItem(bold_labels["Local IP"] + ": -", callback=lambda _: None)
         if self.settings["show_public_ip"]:
-            self.menu["Public IP"] = rumps.MenuItem(bold_labels["Public IP"] + f": {self.public_ip}")
+            self.menu["Public IP"] = rumps.MenuItem(bold_labels["Public IP"] + f": {self.public_ip}", callback=lambda _: None)
         if self.settings["show_storage"]:
-            self.menu["Storage"] = rumps.MenuItem(bold_labels["Storage"] + ": -")
+            self.menu["Storage"] = rumps.MenuItem(bold_labels["Storage"] + ": -", callback=lambda _: None)
         if self.settings["show_uptime"]:
-            self.menu["Uptime"] = rumps.MenuItem(bold_labels["Uptime"] + ": -")
+            self.menu["Uptime"] = rumps.MenuItem(bold_labels["Uptime"] + ": -", callback=lambda _: None)
 
         if self.settings["show_clipboard"]:
-            self.menu["Clipboard History"] = "Clipboard"
+            self.menu["Clipboard History"] = rumps.MenuItem("Clipboard")
             for i in range(6):
-                self.menu["Clipboard History"][f"Clip {i+1}"] = "(empty)"
+                self.menu["Clipboard History"][f"Clip {i+1}"] = rumps.MenuItem("(empty)", callback=self.copy_from_history)
         self.menu.add(None)  # Erotin
         # Asetukset
         self.menu["Settings"] = "Settings"
@@ -279,12 +279,15 @@ class SystemMonitorApp(rumps.App):
             return
         try:
             for i in range(6):
+                clip = self.menu["Clipboard History"][f"Clip {i+1}"]
                 if i < len(self.clipboard_history):
                     c = self.clipboard_history[i]
                     d = c[:47] + "..." if len(c) > 50 else c
-                    self.menu["Clipboard History"][f"Clip {i+1}"].title = f"Clip {i+1}: {d}"
+                    clip.title = f"Clip {i+1}: {d}"
                 else:
-                    self.menu["Clipboard History"][f"Clip {i+1}"].title = f"Clip {i+1}: (empty)"
+                    clip.title = f"Clip {i+1}: (empty)"
+                # Ensure callback is set
+                clip.set_callback(self.copy_from_history)
         except Exception as e:
             print(f"Error updating clipboard menu: {e}")
 
@@ -328,15 +331,23 @@ class SystemMonitorApp(rumps.App):
                 subprocess.run("osascript -e 'tell application \"System Events\" to set frontmost of process \"Python\" to true'", shell=True)
                 # Show confirmation dialog
                 response = rumps.alert(
-                    title="Copy from Clipboard History",
-                    message=f"Do you want to copy this content to clipboard?\n\nContent preview:\n{preview}",
+                    title="Copy from Clipboard History?",
+                    message=f"{preview}",
                     ok="Copy",
                     cancel="Cancel"
                 )
                 # If user clicked "Copy", proceed with copying
                 if response:
-                    c = clip_content.replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
-                    subprocess.run(f'osascript -e \'set the clipboard to "{c}"\'', shell=True)
+                    # Encode the content in base64 to handle all special characters
+                    import base64
+                    encoded = base64.b64encode(clip_content.encode()).decode()
+                    # Use base64 decode in AppleScript to set the clipboard
+                    apple_script = f'''
+                        set encodedText to "{encoded}"
+                        set decodedText to do shell script "echo " & quoted form of encodedText & " | base64 -D"
+                        set the clipboard to decodedText
+                    '''
+                    subprocess.run(['osascript', '-e', apple_script], shell=False)
         except Exception as e:
             print(f"Error copying from clipboard history: {e}")
 
