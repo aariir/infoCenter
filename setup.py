@@ -24,7 +24,7 @@ OPTIONS = {
     'plist': {
         'CFBundleName': 'InfoCenter',
         'CFBundleDisplayName': 'InfoCenter',
-        'CFBundleIdentifier': 'io.aarn.infoCenter',
+        'CFBundleIdentifier': 'io.iiroaarn.infoCenter',
         'CFBundleVersion': '0.1.1',
         'CFBundleShortVersionString': '0.1.1',
         'LSUIElement': True,
