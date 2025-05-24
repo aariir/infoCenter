@@ -124,7 +124,7 @@ class SystemMonitorApp(rumps.App):
         if self.settings["show_clipboard"]:
             self.menu["Clipboard History"] = rumps.MenuItem("Clipboard history")
             for i in range(6):
-                self.menu["Clipboard History"][f"{i+1}"] = rumps.MenuItem("(empty)", callback=self.copy_from_history)
+                self.menu["Clipboard History"][str(i+1)] = rumps.MenuItem(f"{i+1}: (empty)", callback=self.copy_from_history)
         self.menu.add(None)  # Erotin
         # Asetukset
         self.menu["Settings"] = "Settings"
@@ -279,7 +279,7 @@ class SystemMonitorApp(rumps.App):
             return
         try:
             for i in range(6):
-                clip = self.menu["Clipboard History"][f"{i+1}"]
+                clip = self.menu["Clipboard History"][str(i+1)]
                 if i < len(self.clipboard_history):
                     c = self.clipboard_history[i]
                     d = c[:47] + "..." if len(c) > 50 else c
@@ -321,8 +321,8 @@ class SystemMonitorApp(rumps.App):
     @rumps.clicked("Clipboard History", "6")
     def copy_from_history(self, sender):
         try:
-            # Get the clip number before the colon (e.g., from "Clip 3: content" get "3")
-            idx = int(sender.title.split(':')[0].split()[1]) - 1
+            # Get the number before the colon (e.g., from "3: content" get "3")
+            idx = int(sender.title.split(':')[0]) - 1
             if idx < len(self.clipboard_history):
                 clip_content = self.clipboard_history[idx]
                 # Show preview of content (truncated if too long)
