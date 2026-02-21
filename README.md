@@ -1,16 +1,8 @@
-# InfoCenter 🖥️
+# InfoCenter
 
 A minimal macOS menu bar app built with Python and [rumps](https://github.com/jaredks/rumps) that displays system information such as CPU usage, memory, storage, battery, clipboard, IP addresses, and more — directly in the menu bar.
 
 ---
-
-## Features
-
-- ⚡ CPU, memory, storage, and battery, uptime stats
-- 📋 Clipboard history
-- 🌐 IP address display & Network speed
-- 💾 Menu bar only
-- 🛠️ Lightweight and easily configurable
 
 
 ## TODO
@@ -22,9 +14,7 @@ A minimal macOS menu bar app built with Python and [rumps](https://github.com/ja
 
 ---
 
-## 📦 Installation
-
-> Note: This app is macOS-only and uses Python3.
+## Install
 
 ### 1. Clone the repository
 ```bash
@@ -42,13 +32,12 @@ pip install -r requirements.txt
 ```bash
 python3 setup.py py2app
 ```
-The output will be in the /dist directory.
 
 ## Screenshots
 
 <img width="756" alt="iCenter" src="https://github.com/user-attachments/assets/1b8ee6a8-68f6-4aad-8ca1-f8e9e0bd2d8f" />
 
 
-## 🧾 License
+## License
 This project is licensed under the MIT License.
 Feel free to fork, modify, and share!
